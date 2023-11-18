@@ -62,9 +62,6 @@ function ChatComponent() {
             );
         });
     }
-    
-    
-    
 
     return (
         <div className="chat-container">
