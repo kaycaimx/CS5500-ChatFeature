@@ -48,11 +48,11 @@ h1 {
 }
 
 .sender {
-    flex-direction: row-reverse; /* 内容在左，用户名在右 */
+    flex-direction: row-reverse; 
 }
 
 .receiver {
-    flex-direction: row; /* 用户名在左，内容在右 */
+    flex-direction: row; 
 }
 
 .message-user {

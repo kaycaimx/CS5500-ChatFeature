@@ -17,7 +17,7 @@ function ChatComponent() {
     const [messages, setMessages] = useState<MessageContainer[]>([]);
     const [mostRecentId, setMostRecentId] = useState<number>(0);
     const [user, setUser] = useState(window.sessionStorage.getItem('userName') || "");
-    const [message, setMessage] = useState<string>("Hello World");
+    const [message, setMessage] = useState<string>("");
     const bottomRef = useRef(null);
 
 
@@ -63,6 +63,11 @@ function ChatComponent() {
         });
     }
 
+    function handleSendMessage() {
+        chatClient.sendMessage(localUser, message);
+        setMessage("");  // 清空输入框
+    }
+
     return (
         <div className="chat-container">
             <h1>Chat Window</h1>
@@ -75,17 +80,17 @@ function ChatComponent() {
                     type="text"
                     id="message"
                     placeholder="Type a message"
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
                     onKeyUp={(event) => {
                         localMessage = event.currentTarget.value;
                         setMessage(event.currentTarget.value);
                         if (event.key === "Enter") {
-                            chatClient.sendMessage(localUser, localMessage);
-                            event.currentTarget.value = "";
-                            setMessage("");
+                            handleSendMessage();
                         }
                     }}
                 />
-                <button onClick={() => chatClient.sendMessage(localUser, localMessage)}>Send</button>
+                <button onClick={handleSendMessage}>Send</button>
             </div>
         </div>
     );
