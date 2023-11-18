@@ -25,12 +25,23 @@
  * 
  * GET /document/editstatus/:name
  */
+/** 
+ * express server to serve the app.  paths for this are
+ * /api/ - api routes
+ * 
+ * /reset - resets the database
+ * 
 
+ * /message/send
+ * 
+ * /messages/get/
+ */
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { DocumentHolder } from '../Engine/DocumentHolder';
-import { PortsGlobal } from '../ServerDataDefinitions';
+import { Database } from '../Components/Database';
+import { serverPort } from '../Engine/GlobalDefinitions';
 
 // define a debug flag to turn on debugging
 let debug = true;
@@ -128,8 +139,6 @@ app.post('/documents/create/:name', (req: express.Request, res: express.Response
     res.status(200).send(documentJSON);
 
 });
-
-
 
 app.put('/document/cell/edit/:name', (req: express.Request, res: express.Response) => {
     const name = req.params.name;
@@ -267,9 +276,70 @@ app.put('/document/clear/formula/:name', (req: express.Request, res: express.Res
     res.status(200).send(resultJSON);
 });
 
-// get the port we should be using
-const port = PortsGlobal.serverPort;
+
+const database = new Database();
+
+app.use(express.json());
+
+// // log all requests
+// app.use((req, res, next) => {
+//     console.log(`${req.method} ${req.url}`);
+//     next();
+// });
+
+// // enable CORS
+// app.use((req, res, next) => {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     next();
+// });
+
+
+
+app.get('/reset', (req: express.Request, res: express.Response) => {
+    console.log('get /reset');
+    database.reset();
+    return res.json({ message: 'reset' });
+});
+
+// this should technically not be a get since it modifies the server
+app.get('/message/:user/:message', (req: express.Request, res: express.Response) => {
+    const message = req.params.message;
+    const user = req.params.user;
+    console.log(`get /message/${message}/${user}`);
+    database.addMessage(user, message);
+    const result = database.getMessages('');
+    return res.json(result);
+});
+
+app.get('/ping', (req: express.Request, res: express.Response) => {
+    console.log('ping');
+    return res.json({ message: 'pong' });
+});
+
+app.get('/chat/', (req: express.Request, res: express.Response) => {
+    const result = database.getMessages('');
+    console.log('get /chat/');
+    return res.json(result);
+});
+
+app.get('/messages/getall', (req: express.Request, res: express.Response) => {
+    const result = database.getAllMessages();
+    console.log('get /messages/getall');
+    return res.json(result);
+});
+
+
+app.get('/messages/get/:pagingToken?', (req: express.Request, res: express.Response) => {
+    // if there is no :pagingToken, then it will be an empty string
+
+    let pagingToken = req.params.pagingToken || '';
+
+    const result = database.getMessages(pagingToken);
+    console.log(`get /messages/get/${pagingToken}`);
+    return res.json(result);
+});
+
 // start the app and test it
-app.listen(port, () => {
-    console.log(`listening on port ${port}`);
+app.listen(serverPort, () => {
+    console.log(`Server listening on port ${serverPort}!`);
 });

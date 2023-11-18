@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
-import { MessageContainer } from "./Globals";
+import { MessageContainer } from "../Engine/GlobalDefinitions";
 
 import ChatClient from "../Engine/ChatClient";
 import './ChatStyles.css'
@@ -49,52 +49,50 @@ function ChatComponent() {
 
 
     function makeFormatedMessages() {
-        let formatedMessages = [...messages].reverse().map((message, index, array) => {
-            if (index === array.length - 1) { // if this is the last message
-                return <textarea key={index} readOnly value={message.id + "]" + message.user + ": " + message.message} ref={bottomRef} />
-            } else {
-                return <textarea key={index} readOnly value={message.id + "]" + message.user + ": " + message.message} />
-            }
+        return [...messages].reverse().map((message, index) => {
+            let isSender = message.user === localUser;
+            let messageWrapperClass = isSender ? "message-wrapper sender" : "message-wrapper receiver";
+    
+            return (
+                <div key={index} className={messageWrapperClass}>
+                    {!isSender && <div className="message-user">{message.user}</div>}
+                    <div className="message-content">{message.message}</div>
+                    {isSender && <div className="message-user">{message.user}</div>}
+                </div>
+            );
         });
-        return formatedMessages;
     }
+    
+    
+    
 
     return (
-        <div>
+        <div className="chat-container">
             <h1>Chat Window</h1>
-            <button onClick={() => chatClient.getNextMessages()}>Get Messages</button>
-            <div className="scrollable-text-view">
+            <div className="message-box">
                 {makeFormatedMessages()}
             </div>
-            <input
-                type="text"
-                id="user"
-                placeholder={user}
-                onKeyUp={(event) => {
-                    localUser = event.currentTarget.value;
-                    setUser(localUser);
-                }}
-            />
-            <input
-                type="text"
-                id="message"
-                placeholder={message}
-                onKeyUp={(event) => {
-                    localMessage = event.currentTarget.value;
-                    setMessage(event.currentTarget.value);
-                    if (event.key === "Enter") {
-                        chatClient.sendMessage(localUser, localMessage);
-                        
-                        // clear the message
-                        event.currentTarget.value = "";
-                        setMessage("");
-                    }
-                }}
-            />
-
-            <button onClick={() => chatClient.sendMessage(localUser, localMessage)}>Send</button>
+            <div className="input-area">
+                <span>{user}</span>
+                <input
+                    type="text"
+                    id="message"
+                    placeholder="Type a message"
+                    onKeyUp={(event) => {
+                        localMessage = event.currentTarget.value;
+                        setMessage(event.currentTarget.value);
+                        if (event.key === "Enter") {
+                            chatClient.sendMessage(localUser, localMessage);
+                            event.currentTarget.value = "";
+                            setMessage("");
+                        }
+                    }}
+                />
+                <button onClick={() => chatClient.sendMessage(localUser, localMessage)}>Send</button>
+            </div>
         </div>
     );
+    
 }
 
 export default ChatComponent;

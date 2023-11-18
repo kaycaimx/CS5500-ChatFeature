@@ -5,26 +5,29 @@
  * 
  */
 
-import { MessagesContainer, MessageContainer } from "../Components/Globals";
+import { MessagesContainer, MessageContainer } from "../Engine/GlobalDefinitions";
 
 import { PortsGlobal, LOCAL_SERVER_URL, RENDER_SERVER_URL } from '../ServerDataDefinitions';
 
 class ChatClient {
 
-    private _serverPort: number = PortsGlobal.serverPort;
-    private _baseURL: string = `${LOCAL_SERVER_URL}:${this._serverPort}`;
+    private _chatPort: number = PortsGlobal.serverPort;
+    private _baseURL: string;
     earliestMessageID: number = 10000000000;
     previousMessagesFetched: boolean = false;
-
     messages: MessageContainer[] = [];
-
     updateDisplay: () => void = () => { };
+
     /**
      * Creates an instance of ChatClient.
      * @memberof ChatClient
      */
     constructor() {
         console.log("ChatClient");
+
+        const isProduction = process.env.NODE_ENV === 'production';
+        this._baseURL = isProduction ? RENDER_SERVER_URL : `${LOCAL_SERVER_URL}:${this._chatPort}`;
+
         this.getMessages();
         this.getMessagesContinuously();
     }
@@ -79,8 +82,7 @@ class ChatClient {
      * get the next 10 messages from the server if the paging token is not empty
      */
     getMessages(pagingToken: string = '') {
-        // `${this._baseURL}/document/cell/view/${this._documentName}`
-        const url = `http://localhost:5800/messages/get/`;
+        const url = `${this._baseURL}/messages/get/`;
         //const url = `https://pagination-demo.onrender.com/messages/get`
 
         const fetchURL = `${url}${pagingToken}`;
@@ -116,7 +118,7 @@ class ChatClient {
 
     sendMessage(user: string, message: string) {
         console.log("sentMessage()");
-        const url = `http://localhost:5800/message/${user}/${message}`;
+        const url = `${this._baseURL}/message/${user}/${message}`;
         //const url = `https://pagination-demo.onrender.com/message/${user}/${message}`
 
         fetch(url)
