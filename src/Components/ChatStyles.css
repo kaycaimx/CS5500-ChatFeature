@@ -1,0 +1,121 @@
+h1 {
+    text-align: center;
+    font-size: 50px;
+    margin-bottom: 20px; 
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    margin: 20px auto;
+    font-family: 'Arial', sans-serif;
+}
+
+.message-box {
+    overflow-y: auto;
+    height: 1000px;
+    max-height: 600px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.message {
+    display: inline-block;
+    vertical-align: top;
+    max-width: 60%; 
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    align-items: center;
+    word-break: break-word;
+    color: black;
+}
+
+.message-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: black; 
+}
+
+.message-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.sender {
+    flex-direction: row-reverse; 
+}
+
+.receiver {
+    flex-direction: row; 
+}
+
+.message-user {
+    background-color: #726d6d;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin: 0 8px;
+    white-space: nowrap;
+}
+
+.message-content {
+    max-width: 60%;
+    padding: 8px 12px;
+    border-radius: 20px;
+    word-break: break-word;
+    color: black;
+}
+
+.sender .message-content {
+    background-color: #dcf8c6;
+    text-align: right;
+}
+
+.receiver .message-content {
+    background-color: #fff;
+    text-align: left;
+}
+
+.input-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+}
+
+.input-area button {
+    padding: 10px 15px;
+    border-radius: 20px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+
+.input-area button:hover {
+    background-color: #45a049;
+}
+
+.loadMore button {
+    background-color: #4c93af;
+    color: white; 
+    padding: 10px 20px;
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 16px; 
+    margin: 10px 0;
+}

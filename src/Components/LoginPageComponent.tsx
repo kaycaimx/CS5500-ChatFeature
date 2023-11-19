@@ -43,6 +43,10 @@ function LoginPageComponent({ spreadSheetClient }: LoginPageProps): JSX.Element 
           if (event.key === 'Enter') {
             // get the text from the input
             let userName = (event.target as HTMLInputElement).value;
+            if (userName.length > 10) {
+              alert("Username cannot be more than 10 characters");
+              return; 
+            }
             window.sessionStorage.setItem('userName', userName);
             // set the user name
             setUserName(userName);

@@ -1,3 +1,4 @@
+import { PortsGlobal } from '../ServerDataDefinitions';
 
 export const ErrorMessages = {
   partial: "#ERR",
@@ -50,3 +51,16 @@ export interface DocumentTransport {
   errorOccurred: string;
 }
 
+export interface MessageContainer {
+  user: string,
+  message: string,
+  timestamp: Date,
+  id: number
+}
+
+export interface MessagesContainer {
+  messages: MessageContainer[],
+  paginationToken: string
+}
+
+export const serverPort = PortsGlobal.serverPort;

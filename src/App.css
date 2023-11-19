@@ -17,11 +17,22 @@
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  width: 100%;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+
+.App-spreadsheet {
+  flex: 1; 
+}
+.App-chat {
+  flex: 1; 
+  margin-right: 5%;
+  margin-left: 3%;
 }
 
 .Login-header {
