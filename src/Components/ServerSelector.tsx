@@ -1,4 +1,5 @@
-
+import React from 'react';
+import { PortsGlobal, LOCAL_SERVER_URL, RENDER_SERVER_URL } from '../ServerDataDefinitions';
 
 // define the props for ServerSelector
 
@@ -20,10 +21,28 @@ function ServerSelector({ serverSelector, serverSelected }: ServerSelectorProps)
 
     //
     // the callback that will take the name of the button and called serverSelector
+    // function onButtonClick(event: React.MouseEvent<HTMLButtonElement>) {
+    //     const buttonName = event.currentTarget.innerText;
+    //     serverSelector(buttonName);
+    // }
+
     function onButtonClick(event: React.MouseEvent<HTMLButtonElement>) {
         const buttonName = event.currentTarget.innerText;
-        serverSelector(buttonName);
-    } // onButtonClick
+        let serverUrl = '';
+    
+        if (buttonName === 'localhost') {
+            serverUrl = `${LOCAL_SERVER_URL}:${PortsGlobal.serverPort}`;
+        } else if (buttonName === 'renderhost') {
+            serverUrl = RENDER_SERVER_URL;
+        }
+    
+        if (serverUrl) {
+            serverSelector(serverUrl);
+        } else {
+            console.error('Server URL is undefined');
+        }
+    }
+    
 
 
     return (
