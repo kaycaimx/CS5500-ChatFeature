@@ -15,6 +15,7 @@ function ChatComponent() {
     const [message, setMessage] = useState<string>("");
     const bottomRef = useRef<HTMLDivElement>(null);;
     const [lastMessageCount, setLastMessageCount] = useState(0);
+    const [displayCount, setDisplayCount] = useState(10); // number of messages to display at beginning
 
     let localUser = user;
     let localMessage = message;
@@ -53,7 +54,8 @@ function ChatComponent() {
     
     
     function makeFormatedMessages() {
-        return [...messages].reverse().map((message, index) => {
+        let displayedMessages = messages.slice(0, displayCount).reverse(); // get the lastest 10 messages
+        return displayedMessages.map((message, index) => {
             let isSender = message.user === localUser;
             let messageWrapperClass = isSender ? "message-wrapper sender" : "message-wrapper receiver";
     
@@ -69,6 +71,10 @@ function ChatComponent() {
         });
     }
 
+    function handleLoadMore() {
+        setDisplayCount(prevCount => prevCount + 10); // click to load 10 more messages
+    }
+
     function handleSendMessage() {
         chatClient.sendMessage(localUser, message);
         setMessage(""); // clear the message box
@@ -77,6 +83,9 @@ function ChatComponent() {
     return (
         <div className="chat-container">
             <h1>Chat Window</h1>
+            <div className="loadMore">
+                <button onClick={handleLoadMore}>Load More Messages</button>
+            </div>
             <div className="message-box">
                 {makeFormatedMessages()}
             </div>
