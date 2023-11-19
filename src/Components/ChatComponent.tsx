@@ -15,7 +15,7 @@ function ChatComponent() {
     const [message, setMessage] = useState<string>("");
     const bottomRef = useRef<HTMLDivElement>(null);;
     const [lastMessageCount, setLastMessageCount] = useState(0);
-    const [displayCount, setDisplayCount] = useState(10); // number of messages to display at beginning
+    const [displayCount, setDisplayCount] = useState(20); // number of messages to display at beginning
 
     let localUser = user;
     let localMessage = message;
