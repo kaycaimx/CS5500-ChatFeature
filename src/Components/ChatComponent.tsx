@@ -19,7 +19,7 @@ function ChatComponent() {
 
     let localUser = user;
     let localMessage = message;
-    
+
     const updateDisplay = useCallback(() => {
         let updateNeeded = false;
         const newLastId = chatClient.messages[0].id;
@@ -75,9 +75,11 @@ function ChatComponent() {
         setDisplayCount(prevCount => prevCount + 10); // click to load 10 more messages
     }
 
-    function handleSendMessage() {
-        chatClient.sendMessage(localUser, message);
-        setMessage(""); // clear the message box
+    async function handleSendMessage() {
+        if (message.trim() !== "") {
+            await chatClient.sendMessage(user, message.trim());
+            setMessage(""); // clear the message box
+        }
     }
 
     return (
@@ -98,8 +100,6 @@ function ChatComponent() {
                     value={message}
                     onChange={(event) => setMessage(event.target.value)}
                     onKeyUp={(event) => {
-                        localMessage = event.currentTarget.value;
-                        setMessage(event.currentTarget.value);
                         if (event.key === "Enter") {
                             handleSendMessage();
                         }
