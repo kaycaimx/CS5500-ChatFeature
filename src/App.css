@@ -27,11 +27,12 @@
 
 
 .App-spreadsheet {
-  flex: 2; 
+  flex: 1; 
 }
 .App-chat {
   flex: 1; 
   margin-right: 5%;
+  margin-left: 3%;
 }
 
 .Login-header {
