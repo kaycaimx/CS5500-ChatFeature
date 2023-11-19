@@ -34,10 +34,21 @@ function LoginPageComponent({ spreadSheetClient }: LoginPageProps): JSX.Element 
   });
 
   function getUserLogin() {
+    const handleUserNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const inputUserName = event.target.value;
+      if (inputUserName.length > 10) {
+        alert("User name cannot exceed 10 characters");
+      } else {
+        setUserName(inputUserName);
+      }
+    };
+
     return <div>
       <input
         type="text"
         placeholder="User name"
+        value={userName}
+        onChange={handleUserNameChange}
         defaultValue={userName}
         onKeyDown={(event) => {
           if (event.key === 'Enter') {
