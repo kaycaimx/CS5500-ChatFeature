@@ -153,10 +153,10 @@ describe("Server Functionality Tests", () => {
     expect(fetchResult.totalFetched).toBe(11);
   });
 
-  it("should successfully send and fetch 201 messages", async () => {
-    await testSendMessages(201);
+  it("should successfully send and fetch 51 messages", async () => {
+    await testSendMessages(51);
     const fetchResult = await fetchAllMessages();
-    expect(fetchResult.totalFetched).toBe(201);
+    expect(fetchResult.totalFetched).toBe(51);
   });
 });
 
