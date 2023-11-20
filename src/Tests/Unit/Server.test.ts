@@ -132,6 +132,14 @@ describe("Server Functionality Tests", () => {
   beforeEach(async () => {
     await resetTestData();
   });
+   it("should successfully send and fetch 0 message", async () => {
+    await testSendMessages(0);
+    const messages = await getMessages("");
+    expect(messages).not.toBeNull();
+    expect(messages?.messages.length).toBe(0);
+   });
+  
+  
 
   it("should successfully send and fetch a single message", async () => {
     await testSendMessages(1);
@@ -153,6 +161,13 @@ describe("Server Functionality Tests", () => {
     expect(fetchResult.totalFetched).toBe(11);
   });
 
+  it("should successfully send and fetch 20 messages", async () => {
+    await testSendMessages(20);
+    const fetchResult = await fetchAllMessages();
+    expect(fetchResult.totalFetched).toBe(20);
+  });
+
+  
   it("should successfully send and fetch 51 messages", async () => {
     await testSendMessages(51);
     const fetchResult = await fetchAllMessages();
