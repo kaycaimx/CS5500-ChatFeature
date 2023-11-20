@@ -5,11 +5,22 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Available Scripts
 
 In the project directory, you can run:
+### `npm run start-server`
+Runs the backend server for the application. This command starts the server that handles all backend requests, such as fetching, sending, and storing messages or data.
 
-### `npm start`
+1. Open your project's root directory in the terminal.
+2. Run the command npm run start-server.
+3. The server will start, and you should see a confirmation message in the terminal indicating that the server is running. This message may include the server's address and port, typically something like Server running on http://localhost:3005.
+4. With the server running, backend functionalities such as database interactions, message handling, or API requests can now be processed.
+
+### `npm run start`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+1. Open your project's root directory in the terminal.
+2. Run the command npm run start.
+3. Once the command is executed, your default web browser will automatically open and navigate to http://localhost:3000. If it doesn't open automatically, you can manually open your browser and enter the URL.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
