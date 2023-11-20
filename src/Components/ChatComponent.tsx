@@ -107,6 +107,10 @@ function ChatComponent() {
             console.error("Error occurs when loading more messages：", error);
         }
     }
+    
+    const clearMessage = () => {
+        setMessage("");
+    };
 
     return (
         <div className="chat-container">
@@ -120,18 +124,21 @@ function ChatComponent() {
             </div>
             <div className="input-area">
                 <span>{user}</span>
-                <input
-                    type="text"
-                    id="message"
-                    placeholder="Type a message"
-                    value={message}
-                    onChange={(event) => setMessage(event.target.value)}
-                    onKeyUp={(event) => {
-                        if (event.key === "Enter") {
-                            handleSendMessage();
-                        }
-                    }}
-                />
+                <div className="input-with-clear">
+                    <input
+                        type="text"
+                        id="message"
+                        placeholder="Type a message"
+                        value={message}
+                        onChange={(event) => setMessage(event.target.value)}
+                        onKeyUp={(event) => {
+                            if (event.key === "Enter") {
+                                handleSendMessage();
+                            }
+                        }}
+                    />
+                    {message && <button className="clear-button" onClick={clearMessage}>×</button>}
+                </div>
                 <button onClick={handleSendMessage}>Send</button>
             </div>
         </div>
