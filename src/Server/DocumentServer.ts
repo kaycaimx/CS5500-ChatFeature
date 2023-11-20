@@ -40,7 +40,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import { DocumentHolder } from '../Engine/DocumentHolder';
-import { Database } from '../Components/Database';
+import { Database } from '../Engine/Database';
 import { serverPort } from '../Engine/GlobalDefinitions';
 
 // define a debug flag to turn on debugging
