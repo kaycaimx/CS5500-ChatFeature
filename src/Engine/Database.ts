@@ -4,7 +4,7 @@
  * @class Database
  */
 
-import { MessagesContainer, MessageContainer } from '../Engine/GlobalDefinitions';
+import { MessagesContainer, MessageContainer } from './GlobalDefinitions';
 
 class Message implements MessageContainer {
     /**
