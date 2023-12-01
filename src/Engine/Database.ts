@@ -63,6 +63,13 @@ class Database {
    */
   private messages: Message[] = [];
   private messageCount: number = 0;
+  /**
+   * Map of users and their message count
+   *
+   * @private
+   * @type {Map<string, number>}
+   * @memberof Database
+   */
   private frequencyMap: Map<string, number> = new Map<string, number>();
 
   /**
@@ -103,7 +110,12 @@ class Database {
     }
   }
 
-  //getFrequencyMap(): Map<string, number> {
+  /**
+   * Get the frequency map, convert it to an array and sort it from highest to lowest
+   *
+   * @returns {[string, number][]}
+   * @memberof Database
+   */
   getFrequencyMap(): [string, number][] {
     const sortedMap = new Map(
       [...this.frequencyMap.entries()].sort((a, b) => b[1] - a[1])

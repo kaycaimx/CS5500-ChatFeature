@@ -23,7 +23,6 @@ class ChatClient {
   earliestMessageID: number = 10000000000;
   previousMessagesFetched: boolean = false;
   messages: MessageContainer[] = [];
-  frequencyMap: Map<string, number> = new Map<string, number>();
   updateDisplay: () => void = () => {};
 
   /**
@@ -40,7 +39,6 @@ class ChatClient {
 
     this.getMessages();
     this.getMessagesContinuously();
-    this.frequencyMap = new Map<string, number>();
   }
 
   setCallback(callback: () => void) {
@@ -139,22 +137,6 @@ class ChatClient {
       .then((messagesContainer: MessagesContainer) => {
         let messages = messagesContainer.messages;
         this.insertMessages(messages);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  getFrequency() {
-    const url = `${this._baseURL}/messages/frequency`;
-
-    fetch(url)
-      .then((response) => response.json())
-      .then((frequencyMap: Map<string, number>) => {
-        this.frequencyMap = frequencyMap;
-        console.log("frequencyMap");
-        console.log(this.frequencyMap);
-        this.updateDisplay();
       })
       .catch((error) => {
         console.error(error);
