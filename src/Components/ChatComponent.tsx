@@ -6,6 +6,9 @@ import ChatClient from "../Engine/ChatClient";
 import './ChatStyles.css'
 // import e from "express";
 
+import { PortsGlobal, LOCAL_SERVER_URL, RENDER_SERVER_URL } from "../ServerDataDefinitions";
+import { response } from "express";
+
 const chatClient = new ChatClient();
 
 function ChatComponent() {
@@ -18,6 +21,7 @@ function ChatComponent() {
     const [displayCount, setDisplayCount] = useState(20); // number of messages to display at beginning
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [formattedMessages, setFormattedMessages] = useState<JSX.Element[]>([]); // reload the messages when the display count changes
+    const [frequencyData, setFrequencyData] = useState([]); // reload the messages when the display count changes
 
     
     let localUser = user;
@@ -112,6 +116,20 @@ function ChatComponent() {
         setMessage("");
     };
 
+    async function getFrequencyData() {
+            const baseURL = `${LOCAL_SERVER_URL}:${PortsGlobal.serverPort}`;
+            fetch(`${baseURL}/messages/frequency`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("Frequency data loaded successfully");
+                console.log(data);
+                setFrequencyData(data);
+            })
+            .catch((error) => {
+                console.error("Error occurs when getting frequency data：", error);
+            });
+    }
+
     return (
         <div className="chat-container">
             <h1>Chat Window</h1>
@@ -140,7 +158,18 @@ function ChatComponent() {
                     {message && <button className="clear-button" onClick={clearMessage}>×</button>}
                 </div>
                 <button onClick={handleSendMessage}>Send</button>
+                
             </div>
+            <button style={{width:"200px", height:"50px"}} onClick={getFrequencyData}>Get Frequency Data</button>
+                <div>
+                {(frequencyData.length > 0) && (frequencyData.map((data, index) => {
+                    return (
+                        <div key={index}>
+                            <span>{data[0]}: {data[1]} chats</span>
+                        </div>
+                    );
+                }))}
+                </div>
         </div>
     );
     
