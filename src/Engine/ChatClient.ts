@@ -24,6 +24,7 @@ class ChatClient {
   previousMessagesFetched: boolean = false;
   messages: MessageContainer[] = [];
   updateDisplay: () => void = () => {};
+  frequencyData: [string, number][] = [];
 
   /**
    * Creates an instance of ChatClient.
@@ -137,6 +138,19 @@ class ChatClient {
       .then((messagesContainer: MessagesContainer) => {
         let messages = messagesContainer.messages;
         this.insertMessages(messages);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  getFrequencyData() {
+    const url = `${this._baseURL}/messages/frequency`;
+
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        this.frequencyData = [...data];
       })
       .catch((error) => {
         console.error(error);
