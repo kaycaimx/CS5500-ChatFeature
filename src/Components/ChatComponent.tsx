@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { MessageContainer } from "../Engine/GlobalDefinitions";
 
 import ChatClient from "../Engine/ChatClient";
+import BarChart from "./BarChart";
 import "./ChatStyles.css";
 // import e from "express";
 
@@ -12,6 +13,7 @@ import {
   RENDER_SERVER_URL,
 } from "../ServerDataDefinitions";
 import { response } from "express";
+import { Bar } from "victory";
 
 const chatClient = new ChatClient();
 
@@ -142,13 +144,14 @@ function ChatComponent() {
       });
   }
 
-  async function getFrequencyDataByController() {
-    await chatClient.getFrequencyData();
-    let controllerData = chatClient.frequencyData;
-    console.log("Frequency data called by server");
-    console.log(controllerData);
-    setFrequencyDataByController(controllerData);
-  }
+  // Call from controller bug: need to press button twice to get the correct data, otherwise it will return the previous data
+  //   async function getFrequencyDataByController() {
+  //     await chatClient.getFrequencyData();
+  //     let controllerData = chatClient.frequencyData;
+  //     console.log("Frequency data called by server");
+  //     console.log(controllerData);
+  //     setFrequencyDataByController(controllerData);
+  //   }
 
   return (
     <div className="chat-container">
@@ -199,6 +202,7 @@ function ChatComponent() {
             );
           })}
       </div>
+      <BarChart data={frequencyData} />
       {/* <button style={{width:"200px", height:"50px"}} onClick={getFrequencyDataByController}>Get by Controller</button>
                 <div>
                 {(frequencyDataByController.length > 0) && (frequencyDataByController.map((data, index) => {
