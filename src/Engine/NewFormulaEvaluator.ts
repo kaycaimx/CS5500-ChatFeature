@@ -219,7 +219,13 @@ class FormulaEvaluator {
         } else if (token === "tan") {
             result = Math.tan(currentValue);
         } else if (token === "asin") {
-            result = Math.asin(currentValue);
+            if (currentValue >= -1 && currentValue <= 1) {
+                result = Math.asin(currentValue)
+            } else { 
+                this._errorOccurred = true;
+                this._errorMessage = ErrorMessages.invalidFormula;
+                return this._lastResult;
+            }
         } else if (token === "acos") {
             result = Math.acos(currentValue);
         } else if (token === "atan") {
