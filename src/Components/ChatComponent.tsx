@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Modal from "react-modal";
 
 import { MessageContainer } from "../Engine/GlobalDefinitions";
 
@@ -17,6 +18,8 @@ import { Bar } from "victory";
 
 const chatClient = new ChatClient();
 
+Modal.setAppElement("#root");
+
 function ChatComponent() {
   const [messages, setMessages] = useState<MessageContainer[]>([]);
   const [mostRecentId, setMostRecentId] = useState<number>(-1);
@@ -33,6 +36,7 @@ function ChatComponent() {
   const [frequencyDataByController, setFrequencyDataByController] = useState<
     [string, number][]
   >([]); // call frequency from controller
+  const [modalIsOpen, setModalIsOpen] = useState(false);
 
   let localUser = user;
   let localMessage = message;
@@ -138,6 +142,9 @@ function ChatComponent() {
         console.log("Frequency data loaded successfully");
         console.log(data);
         setFrequencyData(data);
+        if (frequencyData.length > 0) {
+          openModal();
+        }
       })
       .catch((error) => {
         console.error("Error occurs when getting frequency data：", error);
@@ -152,6 +159,14 @@ function ChatComponent() {
   //     console.log(controllerData);
   //     setFrequencyDataByController(controllerData);
   //   }
+
+  function openModal() {
+    setModalIsOpen(true);
+  }
+
+  function closeModal() {
+    setModalIsOpen(false);
+  }
 
   return (
     <div className="chat-container">
@@ -202,7 +217,7 @@ function ChatComponent() {
             );
           })}
       </div>
-      <BarChart data={frequencyData} />
+
       {/* <button style={{width:"200px", height:"50px"}} onClick={getFrequencyDataByController}>Get by Controller</button>
                 <div>
                 {(frequencyDataByController.length > 0) && (frequencyDataByController.map((data, index) => {
@@ -213,6 +228,10 @@ function ChatComponent() {
                     );
                 }))}
                 </div> */}
+
+      <Modal isOpen={modalIsOpen} onRequestClose={closeModal}>
+        <BarChart data={frequencyData} />
+      </Modal>
     </div>
   );
 }
