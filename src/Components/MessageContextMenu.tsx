@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import './MessageContextMenu.css';
 interface MessageContextMenuProps {
     messageId: number;
     originalMessage: string;
@@ -30,18 +30,20 @@ const MessageContextMenu: React.FC<MessageContextMenuProps> = ({ messageId, orig
     };
 
     return (
-        <div onContextMenu={(e) => e.preventDefault()}>
+        <div className="message-context-menu">
             {editMode ? (
-                <>
-                    <input type="text" value={editedMessage} onChange={(e) => setEditedMessage(e.target.value)} />
-                    <button onClick={handleSave}>Save</button>
-                    <button onClick={handleCancel}>Cancel</button>
-                </>
+                <div className="edit-section">
+                    <input type="text" value={editedMessage} onChange={(e) => setEditedMessage(e.target.value)} className="edit-input" />
+                    <div className="button-container">
+                        <button onClick={handleSave} className="save-button">Save</button>
+                        <button onClick={handleCancel} className="cancel-button">Cancel</button>
+                    </div>
+                </div>
             ) : (
-                <>
-                    <button onClick={handleEdit}>Edit</button>
-                    <button onClick={handleDelete}>Delete</button>
-                </>
+                <div className="action-buttons">
+                    <div className="edit-button" onClick={handleEdit}>Edit</div>
+                    <div className="delete-button" onClick={handleDelete}>Delete</div>
+                </div>
             )}
         </div>
     );

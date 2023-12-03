@@ -143,9 +143,9 @@ function ChatComponent() {
                     let messageWrapperClass = isSender ? "message-wrapper sender" : "message-wrapper receiver";
 
                     return (
-                        <div key={message.id} className={messageWrapperClass}>
+                        <div key={message.id} className={messageWrapperClass} style={{ display: 'flex', flexDirection: isSender ? 'column' : 'row', alignItems: isSender ? 'flex-end' : 'flex-start' }}>
                             {!isSender && <div className="message-user">{message.user}</div>}
-                            <div className="message-content">{message.message}</div>
+                            <div className="message-content" style={{ marginRight: isSender ? 0 : '10px' }}>{message.message}</div>
                             {isSender && (
                                 <MessageContextMenu 
                                     messageId={message.id} 
