@@ -196,10 +196,15 @@ function ChatComponent() {
         <button onClick={getFrequencyData}>Analyze Active Users</button>
       </div>
       <div className="message-box">{formattedMessages}</div>
+      <div className="input-and-emoji-container">
+                {showEmojis && (
+                    <div className="emoji-picker-container">
+                        <Picker onEmojiClick={onEmojiClick} />
+                    </div>
+                )}
       <div className="input-area">
         <span>{user}</span>
         <button onClick={handleShowEmojis}>😀</button>
-        {showEmojis && <Picker onEmojiClick={onEmojiClick} />}
         <div className="input-with-clear">
           <input
             type="text"
@@ -230,19 +235,10 @@ function ChatComponent() {
           <BarChart data={frequencyData} />
         </Modal>
       )}
-
-      {/* <button style={{width:"200px", height:"50px"}} onClick={getFrequencyDataByController}>Get by Controller</button>
-                <div>
-                {(frequencyDataByController.length > 0) && (frequencyDataByController.map((data, index) => {
-                    return (
-                        <div key={index}>
-                            <span>{data[0]}: {data[1]} chats</span>
-                        </div>
-                    );
-                }))}
-                </div> */}
-    </div>
+      </div>
+      </div>
   );
 }
+    
 
 export default ChatComponent;
