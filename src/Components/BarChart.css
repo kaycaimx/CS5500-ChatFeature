@@ -1,0 +1,12 @@
+.chartWrapper {
+  width: 600px;
+  height: auto;
+  background-color: azure;
+}
+
+.chartHeader {
+  font-size: medium;
+  font-weight: bold;
+  text-align: center;
+  color: #000;
+}
