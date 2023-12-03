@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Picker,{ EmojiClickData } from "emoji-picker-react";
 import Modal from "react-modal";
 
 import { MessageContainer } from "../Engine/GlobalDefinitions";
@@ -37,6 +38,7 @@ function ChatComponent() {
     [string, number][]
   >([]); // call frequency from controller
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [showEmojis, setShowEmojis] = useState<boolean>(false);
 
   const modalStyle = {
     content: {
@@ -177,6 +179,14 @@ function ChatComponent() {
     setModalIsOpen(false);
   }
 
+  const handleShowEmojis = () => {
+    setShowEmojis(!showEmojis);
+  };
+
+  const onEmojiClick = (emojiData: EmojiClickData, event: MouseEvent) => {
+      setMessage(prevInput => prevInput + emojiData.emoji);
+  };
+
   return (
     <div className="chat-container">
       <h1>Chat Window</h1>
@@ -188,6 +198,8 @@ function ChatComponent() {
       <div className="message-box">{formattedMessages}</div>
       <div className="input-area">
         <span>{user}</span>
+        <button onClick={handleShowEmojis}>😀</button>
+        {showEmojis && <Picker onEmojiClick={onEmojiClick} />}
         <div className="input-with-clear">
           <input
             type="text"
