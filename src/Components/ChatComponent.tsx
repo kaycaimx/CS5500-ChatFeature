@@ -129,7 +129,7 @@ function ChatComponent() {
         setFormattedMessages(makeFormatedMessages());
         chatClient.deleteMessage(messageId);
     };
-    
+
     return (
         <div className="chat-container">
             <h1>Chat Window</h1>
