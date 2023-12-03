@@ -121,6 +121,9 @@ class Database {
       [...this.frequencyMap.entries()].sort((a, b) => b[1] - a[1])
     );
     const arr = Array.from(sortedMap);
+    if (arr.length > 10) {
+      return arr.slice(0, 10);
+    }
     return arr;
   }
 

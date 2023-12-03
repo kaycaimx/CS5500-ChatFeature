@@ -11,10 +11,11 @@ function BarChart({ data }: BarChartProps) {
 
   return (
     <div className="chartWrapper">
-      <h2 className="chartHeader">Bar Chart</h2>
+      <h2 className="chartHeader">Top 10 Active Users</h2>
       <VictoryChart
         // theme={VictoryTheme.material}
-        domainPadding={{ x: 10 }}
+        domainPadding={20}
+        //domainPadding={{ x: 10 }}
         // padding={{ top: 0, bottom: 50, left: 50, right: 50 }}
       >
         <VictoryBar
@@ -23,6 +24,7 @@ function BarChart({ data }: BarChartProps) {
             data: { fill: "#514caf" },
           }}
           data={reverseData}
+          labels={({ datum }) => datum[1] + " msgs"}
           x={0}
           y={1}
         />

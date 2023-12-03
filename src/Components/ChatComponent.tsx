@@ -38,6 +38,17 @@ function ChatComponent() {
   >([]); // call frequency from controller
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
+  const modalStyle = {
+    content: {
+      top: "40%",
+      left: "40%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+    },
+  };
+
   let localUser = user;
   let localMessage = message;
 
@@ -142,9 +153,7 @@ function ChatComponent() {
         console.log("Frequency data loaded successfully");
         console.log(data);
         setFrequencyData(data);
-        if (frequencyData.length > 0) {
-          openModal();
-        }
+        openModal();
       })
       .catch((error) => {
         console.error("Error occurs when getting frequency data：", error);
@@ -174,6 +183,7 @@ function ChatComponent() {
       <div className="button-group">
         <button onClick={handleLoadMoreMessages}>Load More Messages</button>
         <button onClick={() => setDisplayCount(20)}>Hide Messages</button>
+        <button onClick={getFrequencyData}>Analyze Active Users</button>
       </div>
       <div className="message-box">{formattedMessages}</div>
       <div className="input-area">
@@ -199,24 +209,15 @@ function ChatComponent() {
         </div>
         <button onClick={handleSendMessage}>Send</button>
       </div>
-      <button
-        style={{ width: "200px", height: "50px" }}
-        onClick={getFrequencyData}
-      >
-        Get Frequency Data
-      </button>
-      <div>
-        {frequencyData.length > 0 &&
-          frequencyData.map((data, index) => {
-            return (
-              <div key={index}>
-                <span>
-                  {data[0]}: {data[1]} chats
-                </span>
-              </div>
-            );
-          })}
-      </div>
+      {frequencyData.length > 0 && (
+        <Modal
+          isOpen={modalIsOpen}
+          onRequestClose={closeModal}
+          style={modalStyle}
+        >
+          <BarChart data={frequencyData} />
+        </Modal>
+      )}
 
       {/* <button style={{width:"200px", height:"50px"}} onClick={getFrequencyDataByController}>Get by Controller</button>
                 <div>
@@ -228,10 +229,6 @@ function ChatComponent() {
                     );
                 }))}
                 </div> */}
-
-      <Modal isOpen={modalIsOpen} onRequestClose={closeModal}>
-        <BarChart data={frequencyData} />
-      </Modal>
     </div>
   );
 }
