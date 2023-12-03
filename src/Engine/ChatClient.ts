@@ -7,12 +7,16 @@
 
 import { MessagesContainer, MessageContainer } from "../Engine/GlobalDefinitions";
 
+import { Database } from '../Engine/Database';
+
 import { PortsGlobal, LOCAL_SERVER_URL, RENDER_SERVER_URL } from '../ServerDataDefinitions';
 
 class ChatClient {
 
+    private database: Database;
     private _chatPort: number = PortsGlobal.serverPort;
     private _baseURL: string;
+    private socket: WebSocket | null = null;
     earliestMessageID: number = 10000000000;
     previousMessagesFetched: boolean = false;
     messages: MessageContainer[] = [];
@@ -27,6 +31,7 @@ class ChatClient {
 
         const isProduction = process.env.NODE_ENV === 'production';
         this._baseURL = isProduction ? RENDER_SERVER_URL : `${LOCAL_SERVER_URL}:${this._chatPort}`;
+        this.database = new Database();
 
         this.getMessages();
         this.getMessagesContinuously();
@@ -36,6 +41,28 @@ class ChatClient {
         this.updateDisplay = callback;
     }
 
+    handleMessageDeleted(messageId: number) {
+        this.messages = this.messages.filter(message => message.id !== messageId);
+        this.updateDisplay();
+    }
+
+    handleMessageUpdated(data: { messageId: any; newMessage: any; }) {
+        const { messageId, newMessage } = data;
+        this.messages = this.messages.map(msg => {
+            if (msg.id === messageId) {
+                return { ...msg, message: newMessage };
+            }
+            return msg;
+        });
+        this.updateDisplay();
+    }
+
+    disconnectWebSocket() {
+        if (this.socket) {
+            this.socket.close();
+            this.socket = null;
+        }
+    }
 
     insertMessage(message: MessageContainer) {
         const messageID = message.id;
@@ -130,9 +157,40 @@ class ChatClient {
             });
     }
 
+    deleteMessage(messageId: number) {
+        console.log("ChatClient.deleteMessage() before deletion", this.messages);
+        const url = `${this._baseURL}/messages/delete/${messageId}`;
+        
+        fetch(url, { method: 'DELETE' })
+            .then(response => {
+                if (response.ok) {
+                    this.messages = this.messages.filter(message => message.id !== messageId);
+                    this.updateDisplay();
+                }
+                console.log("ChatClient.deleteMessage() after deletion", this.messages);
 
+            })
+            .catch(error => console.error('Error deleting message:', error));
+    
+    }
+    
 
-
+    editMessage(messageId: number, newMessage: string) {
+        const url = `${this._baseURL}/message/update/${messageId}`;
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newMessage: newMessage })
+        };
+    
+        fetch(url, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.updateDisplay();
+            })
+            .catch(error => console.error('Error updating message:', error));
+    }
 
 }
 

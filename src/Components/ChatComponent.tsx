@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
 import { MessageContainer } from "../Engine/GlobalDefinitions";
-
 import ChatClient from "../Engine/ChatClient";
+import MessageContextMenu from "./MessageContextMenu";
 import './ChatStyles.css'
-// import e from "express";
 
 const chatClient = new ChatClient();
 
@@ -112,6 +111,25 @@ function ChatComponent() {
         setMessage("");
     };
 
+    const handleEdit = (messageId: number, newMessage: string) => {
+        const updatedMessages = messages.map(msg => {
+            if (msg.id === messageId) {
+                return { ...msg, message: newMessage };
+            }
+            return msg;
+        });
+        setMessages(updatedMessages);
+        setFormattedMessages(makeFormatedMessages());
+        chatClient.editMessage(messageId, newMessage);
+    };
+
+    const handleDelete = (messageId: number) => {
+        const updatedMessages = messages.filter(msg => msg.id !== messageId);
+        setMessages(updatedMessages);
+        setFormattedMessages(makeFormatedMessages());
+        chatClient.deleteMessage(messageId);
+    };
+    
     return (
         <div className="chat-container">
             <h1>Chat Window</h1>
@@ -120,8 +138,28 @@ function ChatComponent() {
                 <button onClick={() => setDisplayCount(20)}>Hide Messages</button>
             </div>
             <div className="message-box">
-                {formattedMessages}
+                {[...messages].slice(0, displayCount).reverse().map((message, index) => {
+                    let isSender = message.user === localUser;
+                    let messageWrapperClass = isSender ? "message-wrapper sender" : "message-wrapper receiver";
+
+                    return (
+                        <div key={message.id} className={messageWrapperClass}>
+                            {!isSender && <div className="message-user">{message.user}</div>}
+                            <div className="message-content">{message.message}</div>
+                            {isSender && (
+                                <MessageContextMenu 
+                                    messageId={message.id} 
+                                    originalMessage={message.message} 
+                                    onEdit={handleEdit} 
+                                    onDelete={handleDelete} 
+                                />
+                            )}
+                        </div>
+                    );
+                })}
+                <div ref={bottomRef}></div>
             </div>
+
             <div className="input-area">
                 <span>{user}</span>
                 <div className="input-with-clear">
