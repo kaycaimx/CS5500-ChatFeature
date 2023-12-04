@@ -47,6 +47,10 @@ class ChatClient {
   }
 
   insertMessage(message: MessageContainer) {
+    if (!Array.isArray(this.messages)) {
+        this.messages = [];
+    }
+    
     const messageID = message.id;
 
     if (this.earliestMessageID > messageID) {
@@ -156,6 +160,74 @@ class ChatClient {
         console.error(error);
       });
   }
+
+    localDeleteMessage(messageId: number) {
+        const initialLength = this.messages.length;
+        this.messages = this.messages.filter(message => message.id !== messageId);
+
+        if (this.messages.length < initialLength) {
+            console.log("Message deleted:", messageId);
+        } else {
+            console.log("Message not found for deletion:", messageId);
+        }
+    }
+
+    async deleteMessage(messageId: number) {
+        this.localDeleteMessage(messageId);
+    
+        const url = `${this._baseURL}/messages/delete/${messageId}`;
+        fetch(url, { method: 'DELETE' })
+            .then(response => response.json())
+            .then((messagesContainer: MessagesContainer) => {
+                this.messages = messagesContainer.messages;
+            })
+            .catch(error => {
+                console.error('Error deleting message:', error);
+                throw error;
+            });
+    }
+    
+
+    localEditMessage(messageId: number, newContent: string) {
+        let messageFound = false;
+        for (let i = 0; i < this.messages.length; i++) {
+            if (this.messages[i].id === messageId) {
+                this.messages[i].message = newContent;
+                messageFound = true;
+                break;
+            }
+        }
+    
+        if (messageFound) {
+            console.log("Message edited:", messageId);
+        } else {
+            console.log("ChatClient Message not found for editing:", messageId);
+        }
+    }
+
+    async editMessage(messageId: number, newMessage: string) {
+        console.log("editMessage()", messageId, newMessage);
+        this.localEditMessage(messageId, newMessage);
+
+        const url = `${this._baseURL}/message/update/${messageId}`;
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newMessage: newMessage })
+        };
+
+        fetch(url, requestOptions)
+            .then(response => response.json())
+            .then((messagesContainer: MessagesContainer) => {
+                console.log("messagesContainer:", messagesContainer);
+                this.messages = messagesContainer.messages;
+                // this.notifyUpdate();
+            })
+            .catch(error => {
+                console.error('Error updating message:', error);
+                throw error;
+            });
+    }   
 }
 
 export default ChatClient;
