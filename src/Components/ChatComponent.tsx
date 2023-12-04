@@ -22,6 +22,8 @@ function ChatComponent() {
     let localUser = user;
     let localMessage = message;
 
+    
+
     const updateDisplay = useCallback(() => {
         let updateNeeded = false;
         const newLastId = chatClient.messages[0]?.id;
@@ -107,28 +109,21 @@ function ChatComponent() {
         }
     }
     
-    const clearMessage = () => {
-        setMessage("");
+    const handleEdit = async (messageId: number, newMessage: string) => {
+        await chatClient.editMessage(messageId, newMessage);
+        setMessages((prevMessages) =>
+            prevMessages.map((message) =>
+                message.id === messageId ? { ...message, message: newMessage } : message
+            )
+        );
     };
 
-    const handleEdit = (messageId: number, newMessage: string) => {
-        const updatedMessages = messages.map(msg => {
-            if (msg.id === messageId) {
-                return { ...msg, message: newMessage };
-            }
-            return msg;
-        });
-        setMessages(updatedMessages);
-        setFormattedMessages(makeFormatedMessages());
-        chatClient.editMessage(messageId, newMessage);
-    };
-
-    const handleDelete = (messageId: number) => {
-        const updatedMessages = messages.filter(msg => msg.id !== messageId);
-        setMessages(updatedMessages);
-        setFormattedMessages(makeFormatedMessages());
-        chatClient.deleteMessage(messageId);
-    };
+    const handleDelete = async (messageId: number) => {
+        await chatClient.deleteMessage(messageId);
+        setMessages((prevMessages) =>
+            prevMessages.filter((message) => message.id !== messageId)
+        );
+    };    
 
     return (
         <div className="chat-container">
@@ -156,6 +151,7 @@ function ChatComponent() {
                             )}
                         </div>
                     );
+
                 })}
                 <div ref={bottomRef}></div>
             </div>
@@ -175,7 +171,7 @@ function ChatComponent() {
                             }
                         }}
                     />
-                    {message && <button className="clear-button" onClick={clearMessage}>×</button>}
+                    {message && <button className="clear-button" onClick={() => setMessage("")}>×</button>}
                 </div>
                 <button onClick={handleSendMessage}>Send</button>
             </div>

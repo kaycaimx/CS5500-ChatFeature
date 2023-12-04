@@ -43,6 +43,9 @@ import { DocumentHolder } from '../Engine/DocumentHolder';
 import { Database } from '../Engine/Database';
 import { serverPort } from '../Engine/GlobalDefinitions';
 
+import { Server } from 'http';
+import WebSocket from 'ws';
+import { MessageContainer, MessagesContainer } from '../Engine/GlobalDefinitions';
 
 // define a debug flag to turn on debugging
 let debug = true;
@@ -54,6 +57,79 @@ if (!debug) {
 
 
 const app = express();
+
+const server = new Server(app);
+const wss = new WebSocket.Server({ server });
+let messages: MessageContainer[] = [];
+
+wss.on('connection', function connection(ws) {
+    console.log("A client connected");
+    ws.on('message', function incoming(message) {
+        console.log("Received:", message);
+        const data = JSON.parse(message.toString());
+
+        switch(data.type) {
+            case 'edit_message':
+                console.log("Switch edit log", data.content)
+                editMessage(data.content.messageId, data.content.newMessage);
+                break;
+            case 'delete_message':
+                deleteMessageById(data.content.messageId);
+                break;
+        }
+    });
+
+    ws.on('error', function error(err) {
+        console.error('WebSocket error:', err);
+    });
+});
+
+// 广播函数
+function broadcast(data: { type: string; messageId: any; messages: any; }) {
+    wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(data));
+        }
+    });
+}
+
+// 编辑消息
+async function editMessage(messageId: number, newMessageText: string) {
+    let messageFound = false;
+    console.log("DocumentServer Message edited:", messageId, newMessageText);
+    try {
+        const success = await database.editMessage(messageId, newMessageText);
+
+        if (success) {
+            broadcast({ type: 'message_edited', messageId, messages });
+        } else {
+            console.log("Message not found for editing:", messageId);
+        }
+    } catch (error) {
+        console.error("Error editing message:", error);
+    }
+}
+
+// 删除消息
+function deleteMessageById(messageId: number) {
+    const messageIndex = messages.findIndex(message => message.id === messageId);
+    if (messageIndex !== -1) {
+        messages.splice(messageIndex, 1);
+        console.log("Message deleted:", messageId);
+        const success = database.deleteMessageById(messageId); 
+        if (success) {
+            broadcast({ type: 'message_deleted', messageId, messages });
+        }
+    } else {
+        console.log("Message not found for deletion:", messageId);
+    }
+}
+
+
+server.listen(serverPort, () => {
+    console.log(`Server and WebSocket now listening on port ${serverPort}`);
+});
+
 app.use(cors());
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -340,37 +416,37 @@ app.get('/messages/get/:pagingToken?', (req: express.Request, res: express.Respo
     return res.json(result);
 });
 
-app.delete('/messages/delete/:messageId', (req, res) => {
-    const messageId = parseInt(req.params.messageId);
-    const isDeleted = database.deleteMessageById(messageId);
+// app.delete('/messages/delete/:messageId', (req, res) => {
+//     const messageId = parseInt(req.params.messageId);
+//     const isDeleted = database.deleteMessageById(messageId);
 
-    if (isDeleted) {
-        res.status(200).json({ message: "Message deleted successfully." });
-    } else {
-        res.status(404).json({ error: "Message not found." });
-    }
-});
+//     if (isDeleted) {
+//         res.status(200).json({ message: "Message deleted successfully." });
+//     } else {
+//         res.status(404).json({ error: "Message not found." });
+//     }
+// });
 
-app.put('/message/update/:messageId', (req, res) => {
-    const messageId = parseInt(req.params.messageId);
-    const newMessage = req.body.newMessage; 
+// app.put('/message/update/:messageId', (req, res) => {
+//     const messageId = parseInt(req.params.messageId);
+//     const newMessage = req.body.newMessage; 
 
-    if (!newMessage) {
-        return res.status(400).json({ error: "No new message provided." });
-    }
+//     if (!newMessage) {
+//         return res.status(400).json({ error: "No new message provided." });
+//     }
 
-    const isUpdated = database.editMessage(messageId, newMessage);
+//     const isUpdated = database.editMessage(messageId, newMessage);
 
-    if (isUpdated) {
-        res.status(200).json({ message: "Message updated successfully." });
-    } else {
-        res.status(404).json({ error: "Message not found or not updated." });
-    }
-});
+//     if (isUpdated) {
+//         res.status(200).json({ message: "Message updated successfully." });
+//     } else {
+//         res.status(404).json({ error: "Message not found or not updated." });
+//     }
+// });
 
 
 // start the app and test it
-app.listen(serverPort, () => {
-    console.log(`Server listening on port ${serverPort}!`);
-});
+// app.listen(serverPort, () => {
+//     console.log(`Server listening on port ${serverPort}!`);
+// });
 

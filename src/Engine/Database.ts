@@ -193,7 +193,7 @@ class Database {
         return result;
     }
 
-    public deleteMessageById(messageId: number): boolean {
+    deleteMessageById(messageId: number): boolean {
         console.log(`deleteMessageById(${messageId})`);
         console.log("messages: ", this.messages);
         const messageIndex = this.messages.findIndex(message => message.id === messageId);
@@ -205,11 +205,28 @@ class Database {
         }
     }
 
+    // editMessage(messageId: number, newMessageText: string) {
+    //     const messageIndex = this.messages.findIndex(message => message.id === messageId);
+    //     if (messageIndex !== -1) {
+    //         this.messages[messageIndex].message = newMessageText;
+    //         this.messages[messageIndex].timestamp = new Date();
+    //         return true;
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
     editMessage(messageId: number, newMessageText: string) {
-        const messageIndex = this.messages.findIndex(message => message.id === messageId);
-        if (messageIndex !== -1) {
-            this.messages[messageIndex].message = newMessageText;
-            this.messages[messageIndex].timestamp = new Date();
+        const updatedMessages = this.messages.map(message => {
+            if (message.id === messageId) {
+                return { ...message, message: newMessageText, timestamp: new Date() };
+            } else {
+                return message;
+            }
+        });
+    
+        if (JSON.stringify(updatedMessages) !== JSON.stringify(this.messages)) {
+            this.messages = updatedMessages;
             return true;
         } else {
             return false;

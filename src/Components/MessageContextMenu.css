@@ -10,14 +10,14 @@
     cursor: pointer;
     opacity: 0.7;
     color: white;
-    font-size: 0; /* 隐藏文本 */
+    font-size: 0;
 }
 
 .message-context-menu .action-buttons div:hover {
     opacity: 1;
-    width: auto; /* 增加宽度以适应文本 */
+    width: auto;
     padding: 0 10px;
-    font-size: 14px; /* 显示文本 */
+    font-size: 14px; 
 }
 
 .edit-button {
@@ -37,46 +37,45 @@
 .edit-input {
     margin-top: 5px;
     margin-bottom: 5px;
-    border: 1px solid #ccc; /* 灰色边框 */
+    border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 5px 10px; /* 增加内边距 */
+    padding: 5px 10px;
     font-size: 14px;
 }
 
-/* 样式为Save按钮 */
 .save-button {
-    background-color: #4CAF50; /* 绿色背景颜色 */
-    color: white; /* 白色文字颜色 */
+    background-color: #4CAF50;
+    color: white;
     border: none;
-    padding: 10px 20px; /* 增加内边距 */
+    padding: 10px 20px; 
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    border-radius: 20px; /* 圆润的边框 */
+    border-radius: 20px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .save-button:hover {
-    background-color: #45a049; /* 悬停时的颜色 */
+    background-color: #45a049;
 }
 
 .cancel-button {
-    background-color: #f44336; /* 红色背景颜色 */
-    color: white; /* 白色文字颜色 */
+    background-color: #f44336; 
+    color: white; 
     border: none;
-    padding: 10px 20px; /* 增加内边距 */
+    padding: 10px 20px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-size: 14px;
-    border-radius: 20px; /* 圆润的边框 */
+    border-radius: 20px;
     cursor: pointer;
-    margin-right: 10px; /* 调整右侧间距 */
+    margin-right: 10px;
     transition: background-color 0.3s ease;
 }
 
 .cancel-button:hover {
-    background-color: #d32f2f; /* 悬停时的颜色 */
+    background-color: #d32f2f;
 }

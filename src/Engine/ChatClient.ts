@@ -35,36 +35,41 @@ class ChatClient {
 
         this.getMessages();
         this.getMessagesContinuously();
+
+        // WebSocket
+        this.initWebSocket();
+    }
+
+    initWebSocket() {
+        console.log("initWebSocket()");
+        this.socket = new WebSocket('ws://localhost:3005');
+
+        this.socket.onopen = () => {
+            console.log("initWebSocket WebSocket connection established");
+        };
+
+        this.socket.onmessage = (event) => {
+            console.log("initWebSocket Message from server:", event.data);
+        };
+
+        this.socket.onclose = () => {
+            console.log("initWebSocket WebSocket connection closed");
+        };
+
+        this.socket.onerror = (error) => {
+            console.error("initWebSocket WebSocket error:", error);
+        };
     }
 
     setCallback(callback: () => void) {
         this.updateDisplay = callback;
     }
 
-    handleMessageDeleted(messageId: number) {
-        this.messages = this.messages.filter(message => message.id !== messageId);
-        this.updateDisplay();
-    }
-
-    handleMessageUpdated(data: { messageId: any; newMessage: any; }) {
-        const { messageId, newMessage } = data;
-        this.messages = this.messages.map(msg => {
-            if (msg.id === messageId) {
-                return { ...msg, message: newMessage };
-            }
-            return msg;
-        });
-        this.updateDisplay();
-    }
-
-    disconnectWebSocket() {
-        if (this.socket) {
-            this.socket.close();
-            this.socket = null;
-        }
-    }
-
     insertMessage(message: MessageContainer) {
+        if (!Array.isArray(this.messages)) {
+            this.messages = [];
+        }
+        
         const messageID = message.id;
 
         if (this.earliestMessageID > messageID) {
@@ -96,12 +101,45 @@ class ChatClient {
     }
 
     insertMessages(messages: MessageContainer[]) {
+        if (!messages || messages.length === 0) {
+            console.log("No messages to insert");
+            return;
+        }
+
         for (let i = 0; i < messages.length; i++) {
             const message = messages[i];
             this.insertMessage(message);
 
         }
         this.updateDisplay();
+    }
+
+    localEditMessage(messageId: number, newContent: string) {
+        let messageFound = false;
+        for (let i = 0; i < this.messages.length; i++) {
+            if (this.messages[i].id === messageId) {
+                this.messages[i].message = newContent;
+                messageFound = true;
+                break;
+            }
+        }
+    
+        if (messageFound) {
+            console.log("Message edited:", messageId);
+        } else {
+            console.log("ChatClient Message not found for editing:", messageId);
+        }
+    }
+
+    localDeleteMessage(messageId: number) {
+        const initialLength = this.messages.length;
+        this.messages = this.messages.filter(message => message.id !== messageId);
+    
+        if (this.messages.length < initialLength) {
+            console.log("Message deleted:", messageId);
+        } else {
+            console.log("Message not found for deletion:", messageId);
+        }
     }
 
     /** 
@@ -143,7 +181,7 @@ class ChatClient {
     }
 
     sendMessage(user: string, message: string) {
-        console.log("sentMessage()");
+        console.log("sentMessage()", this.messages);
         const url = `${this._baseURL}/message/${user}/${message}`;
 
         fetch(url)
@@ -157,40 +195,72 @@ class ChatClient {
             });
     }
 
-    deleteMessage(messageId: number) {
-        console.log("ChatClient.deleteMessage() before deletion", this.messages);
-        const url = `${this._baseURL}/messages/delete/${messageId}`;
-        
-        fetch(url, { method: 'DELETE' })
-            .then(response => {
-                if (response.ok) {
-                    this.messages = this.messages.filter(message => message.id !== messageId);
-                    this.updateDisplay();
-                }
-                console.log("ChatClient.deleteMessage() after deletion", this.messages);
-
-            })
-            .catch(error => console.error('Error deleting message:', error));
+    // async deleteMessage(messageId: number) {
+    //     this.localDeleteMessage(messageId);
     
-    }
+    //     const url = `${this._baseURL}/messages/delete/${messageId}`;
+    //     fetch(url, { method: 'DELETE' })
+    //         .then(response => response.json())
+    //         .then((messagesContainer: MessagesContainer) => {
+    //             this.messages = messagesContainer.messages;
+    //         })
+    //         .catch(error => {
+    //             console.error('Error deleting message:', error);
+    //             throw error;
+    //         });
+    // }
     
 
+    // async editMessage(messageId: number, newMessage: string) {
+    //     console.log("editMessage()", messageId, newMessage);
+    //     this.localEditMessage(messageId, newMessage);
+
+    //     const url = `${this._baseURL}/message/update/${messageId}`;
+    //     const requestOptions = {
+    //         method: 'PUT',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ newMessage: newMessage })
+    //     };
+
+    //     fetch(url, requestOptions)
+    //         .then(response => response.json())
+    //         .then((messagesContainer: MessagesContainer) => {
+    //             console.log("messagesContainer:", messagesContainer);
+    //             this.messages = messagesContainer.messages;
+    //             // this.notifyUpdate();
+    //         })
+    //         .catch(error => {
+    //             console.error('Error updating message:', error);
+    //             throw error;
+    //         });
+    // }   
     editMessage(messageId: number, newMessage: string) {
-        const url = `${this._baseURL}/message/update/${messageId}`;
-        const requestOptions = {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ newMessage: newMessage })
-        };
-    
-        fetch(url, requestOptions)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                this.updateDisplay();
-            })
-            .catch(error => console.error('Error updating message:', error));
+        console.log("editMessage()", messageId, newMessage);
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            console.log("WebSocket is initialized.");
+            const messageData = {
+                type: 'edit_message',
+                content: { messageId, newMessage }
+            };
+            this.socket.send(JSON.stringify(messageData));
+            console.log(JSON.stringify(messageData));
+        } else {
+            console.error("WebSocket is not initialized.");
+        }
     }
+    
+    deleteMessage(messageId: number) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            const messageData = {
+                type: 'delete_message',
+                content: { messageId }
+            };
+            this.socket.send(JSON.stringify(messageData));
+        } else {
+            console.error("WebSocket is not initialized.");
+        }
+    }
+
 
 }
 
