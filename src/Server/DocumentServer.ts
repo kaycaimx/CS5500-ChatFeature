@@ -359,6 +359,37 @@ app.get(
   }
 );
 
+// edit a message by id, and newMessage content
+app.put('/message/update/:messageId', (req, res) => {
+    const messageId = parseInt(req.params.messageId);
+    const newMessage = req.body.newMessage; 
+
+    if (!newMessage) {
+        return res.status(400).json({ error: "No new message provided." });
+    }
+
+    const isUpdated = database.editMessage(messageId, newMessage);
+
+    if (isUpdated) {
+        res.status(200).json({ message: "Message updated successfully." });
+    } else {
+        res.status(404).json({ error: "Message not found or not updated." });
+    }
+});
+
+// delete a message by id
+app.delete('/messages/delete/:messageId', (req, res) => {
+    const messageId = parseInt(req.params.messageId);
+    const isDeleted = database.deleteMessageById(messageId);
+
+    if (isDeleted) {
+        res.status(200).json({ message: "Message deleted successfully." });
+    } else {
+        res.status(404).json({ error: "Message not found." });
+    }
+});
+
+
 // start the app and test it
 app.listen(serverPort, () => {
   console.log(`Server listening on port ${serverPort}!`);

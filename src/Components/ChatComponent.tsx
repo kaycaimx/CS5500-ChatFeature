@@ -5,6 +5,7 @@ import Modal from "react-modal";
 import { MessageContainer } from "../Engine/GlobalDefinitions";
 
 import ChatClient from "../Engine/ChatClient";
+import MessageContext from "./MessageContext";
 import BarChart from "./BarChart";
 import "./ChatStyles.css";
 // import e from "express";
@@ -162,6 +163,22 @@ function ChatComponent() {
       });
   }
 
+    const handleEdit = async (messageId: number, newMessage: string) => {
+        await chatClient.editMessage(messageId, newMessage);
+        setMessages((prevMessages) =>
+            prevMessages.map((message) =>
+                message.id === messageId ? { ...message, message: newMessage } : message
+            )
+        );
+    };
+
+    const handleDelete = async (messageId: number) => {
+        await chatClient.deleteMessage(messageId);
+        setMessages((prevMessages) =>
+            prevMessages.filter((message) => message.id !== messageId)
+        );
+    };
+
   // Call from controller bug: need to press button twice to get the correct data, otherwise it will return the previous data
   //   async function getFrequencyDataByController() {
   //     await chatClient.getFrequencyData();
@@ -187,6 +204,8 @@ function ChatComponent() {
       setMessage(prevInput => prevInput + emojiData.emoji);
   };
 
+
+
   return (
     <div className="chat-container">
       <h1>Chat Window</h1>
@@ -195,48 +214,70 @@ function ChatComponent() {
         <button onClick={() => setDisplayCount(20)}>Hide Messages</button>
         <button onClick={getFrequencyData}>Analyze Active Users</button>
       </div>
-      <div className="message-box">{formattedMessages}</div>
-      <div className="input-and-emoji-container">
-                {showEmojis && (
-                    <div className="emoji-picker-container">
-                        <Picker onEmojiClick={onEmojiClick} />
-                    </div>
-                )}
-      <div className="input-area">
-        <span>{user}</span>
-        <button onClick={handleShowEmojis}>😀</button>
-        <div className="input-with-clear">
-          <input
-            type="text"
-            id="message"
-            placeholder="Type a message"
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            onKeyUp={(event) => {
-              if (event.key === "Enter") {
-                handleSendMessage();
-              }
-            }}
-          />
-          {message && (
-            <button className="clear-button" onClick={clearMessage}>
-              ×
-            </button>
-          )}
-        </div>
-        <button onClick={handleSendMessage}>Send</button>
-      </div>
-      {frequencyData.length > 0 && (
-        <Modal
-          isOpen={modalIsOpen}
-          onRequestClose={closeModal}
-          style={modalStyle}
-        >
-          <BarChart data={frequencyData} />
-        </Modal>
-      )}
-      </div>
-      </div>
+      <div className="message-box">
+        {[...messages].slice(0, displayCount).reverse().map((message, index) => {
+            let isSender = message.user === localUser;
+            let messageWrapperClass = isSender ? "message-wrapper sender" : "message-wrapper receiver";
+
+            return (
+                <div key={message.id} className={messageWrapperClass} style={{ display: 'flex', flexDirection: isSender ? 'column' : 'row', alignItems: isSender ? 'flex-end' : 'flex-start' }}>
+                    {!isSender && <div className="message-user">{message.user}</div>}
+                    <div className="message-content" style={{ marginRight: isSender ? 0 : '10px' }}>{message.message}</div>
+                    {isSender && (
+                        <MessageContext
+                            messageId={message.id} 
+                            originalMessage={message.message} 
+                            onEdit={handleEdit} 
+                            onDelete={handleDelete} 
+                        />
+                    )}
+                </div>
+            );
+        })}
+        <div ref={bottomRef}></div>
+    </div>
+
+    <div className="input-and-emoji-container">
+            {showEmojis && (
+                <div className="emoji-picker-container">
+                    <Picker onEmojiClick={onEmojiClick} />
+                </div>
+            )}
+    <div className="input-area">
+    <span>{user}</span>
+    <button onClick={handleShowEmojis}>😀</button>
+    <div className="input-with-clear">
+        <input
+        type="text"
+        id="message"
+        placeholder="Type a message"
+        value={message}
+        onChange={(event) => setMessage(event.target.value)}
+        onKeyUp={(event) => {
+            if (event.key === "Enter") {
+            handleSendMessage();
+            }
+        }}
+        />
+        {message && (
+        <button className="clear-button" onClick={clearMessage}>
+            ×
+        </button>
+        )}
+    </div>
+    <button onClick={handleSendMessage}>Send</button>
+    </div>
+    {frequencyData.length > 0 && (
+    <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={modalStyle}
+    >
+        <BarChart data={frequencyData} />
+    </Modal>
+    )}
+    </div>
+    </div>
   );
 }
     
