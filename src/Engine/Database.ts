@@ -229,28 +229,39 @@ class Database {
     return result;
   }
 
-    deleteMessageById(messageId: number): boolean {
-        console.log(`deleteMessageById(${messageId})`);
-        console.log("messages: ", this.messages);
-        const messageIndex = this.messages.findIndex(message => message.id === messageId);
-        if (messageIndex !== -1) {
-            this.messages.splice(messageIndex, 1);
-            return true;
-        } else {
-            return false;
-        }
+  deleteMessageById(messageId: number): boolean {
+    console.log(`deleteMessageById(${messageId})`);
+    console.log("messages: ", this.messages);
+    const messageIndex = this.messages.findIndex(
+      (message) => message.id === messageId
+    );
+    const user = this.messages[messageIndex].user;
+    if (this.frequencyMap.has(user)) {
+      const count = this.frequencyMap.get(user);
+      if (count !== undefined) {
+        this.frequencyMap.set(user, count - 1);
+      }
     }
+    if (messageIndex !== -1) {
+      this.messages.splice(messageIndex, 1);
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-    editMessage(messageId: number, newMessageText: string) {
-        const messageIndex = this.messages.findIndex(message => message.id === messageId);
-        if (messageIndex !== -1) {
-            this.messages[messageIndex].message = newMessageText;
-            this.messages[messageIndex].timestamp = new Date();
-            return true;
-        } else {
-            return false;
-        }
+  editMessage(messageId: number, newMessageText: string) {
+    const messageIndex = this.messages.findIndex(
+      (message) => message.id === messageId
+    );
+    if (messageIndex !== -1) {
+      this.messages[messageIndex].message = newMessageText;
+      this.messages[messageIndex].timestamp = new Date();
+      return true;
+    } else {
+      return false;
     }
+  }
 }
 
 export { Database, Message };
