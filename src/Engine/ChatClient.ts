@@ -186,7 +186,6 @@ class ChatClient {
                 throw error;
             });
     }
-    
 
     localEditMessage(messageId: number, newContent: string) {
         let messageFound = false;

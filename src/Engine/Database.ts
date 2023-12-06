@@ -244,6 +244,7 @@ class Database {
     }
     if (messageIndex !== -1) {
       this.messages.splice(messageIndex, 1);
+      this.messageCount--;
       return true;
     } else {
       return false;
@@ -256,7 +257,7 @@ class Database {
     );
     if (messageIndex !== -1) {
       this.messages[messageIndex].message = newMessageText;
-      this.messages[messageIndex].timestamp = new Date();
+    //   this.messages[messageIndex].timestamp = new Date(); 
       return true;
     } else {
       return false;
