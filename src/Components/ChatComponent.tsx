@@ -59,15 +59,15 @@ function ChatComponent() {
         let updateNeeded = false;
         const newLastId = chatClient.messages[0]?.id;
         if (newLastId !== mostRecentId) {
-        updateNeeded = true;
+            updateNeeded = true;
         }
         if (chatClient.previousMessagesFetched) {
-        updateNeeded = true;
-        chatClient.previousMessagesFetched = false;
-        setDisplayCount((currentCount) => currentCount + 10);
+            updateNeeded = true;
+            chatClient.previousMessagesFetched = false;
+            setDisplayCount((currentCount) => currentCount + 10);
         }
         if (!updateNeeded) {
-        return;
+            return;
         }
 
         let newMessages = [...chatClient.messages];
@@ -79,25 +79,46 @@ function ChatComponent() {
         chatClient.setCallback(updateDisplay);
     }, [updateDisplay]);
 
+    // useEffect(() => {
+    //     const messageBox = document.querySelector(".message-box");
+    //     if (messageBox) {
+    //     if (isSendingMessage) {
+    //         // if we are sending a message, scroll to the bottom
+    //         setTimeout(() => {
+    //         messageBox.scrollTop = messageBox.scrollHeight;
+    //         }, 100);
+    //         setIsSendingMessage(false); // reset the flag
+    //     } else if (messages.length > lastMessageCount) {
+    //         // keep the scroll position when loading more messages
+    //         const currentScrollPosition = messageBox.scrollTop;
+    //         messageBox.scrollTop = currentScrollPosition;
+    //     }
+    //     }
+    //     setLastMessageCount(messages.length);
+
+    //     console.log("messages, lastMessageCount, isSendingMessage called: ", messages);
+    // }, [messages, lastMessageCount, isSendingMessage]);
+
     useEffect(() => {
         const messageBox = document.querySelector(".message-box");
-        if (messageBox) {
-        if (isSendingMessage) {
-            // if we are sending a message, scroll to the bottom
+        if (messageBox && isSendingMessage) {
+            // Scroll to the bottom only when a message is sent
             setTimeout(() => {
-            messageBox.scrollTop = messageBox.scrollHeight;
+                messageBox.scrollTop = messageBox.scrollHeight;
             }, 100);
-            setIsSendingMessage(false); // reset the flag
-        } else if (messages.length > lastMessageCount) {
-            // keep the scroll position when loading more messages
+        }
+    }, [isSendingMessage]);
+    
+    useEffect(() => {
+        const messageBox = document.querySelector(".message-box");
+        if (messageBox && messages.length > lastMessageCount) {
+            // Handle scroll position when loading more messages
             const currentScrollPosition = messageBox.scrollTop;
             messageBox.scrollTop = currentScrollPosition;
+            setLastMessageCount(messages.length);
         }
-        }
-        setLastMessageCount(messages.length);
-
-        console.log("messages, lastMessageCount, isSendingMessage called: ", messages);
-    }, [messages, lastMessageCount, isSendingMessage]);
+    }, [messages, lastMessageCount]);
+    
 
     function makeFormatedMessages() {
         let formatedMessages = [...messages]
@@ -134,17 +155,15 @@ function ChatComponent() {
                 await chatClient.sendMessage(user, message.trim());
             } catch (error) {
                 console.error("Error sending message: ", error);
-            } finally {
                 setIsSendingMessage(false);
-            }
+            } 
+            // finally {
+            //     setIsSendingMessage(false);
+            // }
     
             setMessage(""); 
         }
     }
-    
-    useEffect(() => {
-        localStorage.setItem('chatMessages', JSON.stringify(messages));
-    }, [messages]);
 
     async function handleLoadMoreMessages() {
         console.log("handleLoadMoreMessages called");
@@ -217,6 +236,16 @@ function ChatComponent() {
             window.removeEventListener('storage', handleStorageChange);
         };
     }, []);    
+    
+    useEffect(() => {
+        const storedMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]');
+        const sortedMessages = storedMessages.slice().reverse();
+        setMessages(sortedMessages);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('chatMessages', JSON.stringify(messages));
+    }, [messages]);
     
     const handleEdit = async (messageId: number, newMessage: string) => {
         await chatClient.editMessage(messageId, newMessage);
