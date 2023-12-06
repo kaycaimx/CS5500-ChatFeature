@@ -19,6 +19,7 @@ class ChatClient {
     private socket: WebSocket | null = null;
     earliestMessageID: number = 10000000000;
     previousMessagesFetched: boolean = false;
+    websocketFetched: boolean = false;
     messages: MessageContainer[] = [];
     updateDisplay: () => void = () => { };
     // 添加一个用来保存回调函数的属性
@@ -77,11 +78,18 @@ class ChatClient {
             console.log("WebSocket message received:", event);
             const data = JSON.parse(event.data);
             if (data.type === 'messageUpdated') {
-                this.localEditMessage(data.messageId, data.newMessage);
-                localStorage.setItem('messages', JSON.stringify(this.messages));
+                // this.localEditMessage(data.messageId, data.newMessage);
+                // localStorage.setItem('messages', JSON.stringify(this.messages));
+                // this.notifyMessageChange();
+                const { messageId, newMessage } = data;
+                const messageIndex = this.messages.findIndex(m => m.id === messageId);
+                if (messageIndex !== -1) {
+                    this.messages[messageIndex].message = newMessage;
+                    
+                }
             } else if (data.type === 'messageDeleted') {
                 this.localDeleteMessage(data.messageId);
-                localStorage.setItem('messages', JSON.stringify(this.messages));
+                this.notifyMessageChange();
             }
             console.log("WebSocket message data:", data);
         };
@@ -270,7 +278,7 @@ class ChatClient {
     //             throw error;
     //         });
     // }   
-    editMessage(messageId: number, newMessage: string) {
+    editMessage(messageId: number, newMessage: string, callback: () => void) {
         console.log("editMessage()", messageId, newMessage);
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             console.log("WebSocket is initialized.");
@@ -279,23 +287,43 @@ class ChatClient {
                 content: { messageId, newMessage }
             };
             this.socket.send(JSON.stringify(messageData));
-            console.log(JSON.stringify(messageData));
+
+            console.log("editMessage", JSON.stringify(messageData), "this.message", this.messages);
+
+            const messageIndex = this.messages.findIndex(m => m.id === messageId);
+            if (messageIndex !== -1) {
+                this.messages[messageIndex].message = newMessage;
+            }
+
+            callback();
         } else {
             console.error("WebSocket is not initialized.");
         }
     }
     
-    deleteMessage(messageId: number) {
+    deleteMessage(messageId: number, callback: () => void) {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             const messageData = {
                 type: 'delete_message',
                 content: { messageId }
             };
             this.socket.send(JSON.stringify(messageData));
+
+            callback();
         } else {
             console.error("WebSocket is not initialized.");
         }
     }
+
+    notifyMessageChange() {
+      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+          const messageData = {
+              type: 'messageChanged'
+          };
+          this.socket.send(JSON.stringify(messageData));
+      }
+  }
+  
 
 
 }

@@ -17,22 +17,10 @@ function ChatComponent() {
     const [displayCount, setDisplayCount] = useState(20); // number of messages to display at beginning
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [formattedMessages, setFormattedMessages] = useState<JSX.Element[]>([]); // reload the messages when the display count changes
-    const [forceUpdateKey, setForceUpdateKey] = useState(0);
-    
+    const [needsUpdate, setNeedsUpdate] = useState(false);
+
     let localUser = user;
     let localMessage = message;
-
-    useEffect(() => {
-        console.log("useEffect is running"); // 添加这行
-        const unsubscribe = chatClient.subscribeToUpdates((updatedMessages) => {
-            console.log("Updating messages in component", updatedMessages);
-            setMessages(updatedMessages);
-        });
-    
-        return () => {
-            unsubscribe();
-        };
-    }, [forceUpdateKey]);
     
 
     const updateDisplay = useCallback(() => {
@@ -45,12 +33,14 @@ function ChatComponent() {
             updateNeeded = true;
             chatClient.previousMessagesFetched = false;
             setDisplayCount(currentCount => currentCount + 10); 
-        }
-        if (!updateNeeded) {
+        } if (needsUpdate) {
+            updateNeeded = true;
+        } if (!updateNeeded) {
             return;
         }
-    
         let newMessages = [...chatClient.messages];
+        console.log("Updating messages in callback", chatClient.messages);
+        console.log("Updating messages in callback", messages);
         setMessages(newMessages);
         setMostRecentId(newLastId);
     }, [mostRecentId, messages]);
@@ -119,27 +109,28 @@ function ChatComponent() {
             console.error("Error occurs when loading more messages：", error);
         }
     }
-    
-    function forceUpdate() {
-        setForceUpdateKey((prevKey) => prevKey + 1);
-    }
+
+    useEffect(() => {
+        if (needsUpdate) {
+            updateDisplay();
+            setNeedsUpdate(false);
+        }
+    }, [needsUpdate]);
 
     const handleEdit = async (messageId: number, newMessage: string) => {
-        await chatClient.editMessage(messageId, newMessage);
+        await chatClient.editMessage(messageId, newMessage, () => setNeedsUpdate(true));
         setMessages((prevMessages) =>
             prevMessages.map((message) =>
                 message.id === messageId ? { ...message, message: newMessage } : message
             )
         );
-        forceUpdate();
     };
 
     const handleDelete = async (messageId: number) => {
-        await chatClient.deleteMessage(messageId);
+        await chatClient.deleteMessage(messageId, () => setNeedsUpdate(true));
         setMessages((prevMessages) =>
             prevMessages.filter((message) => message.id !== messageId)
         );
-        forceUpdate();
     };    
 
     return (
