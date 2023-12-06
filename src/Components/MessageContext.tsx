@@ -33,7 +33,16 @@ const MessageContext: React.FC<MessageContextMenuProps> = ({ messageId, original
         <div className="message-context-menu">
             {editMode ? (
                 <div className="edit-section">
-                    <input type="text" value={editedMessage} onChange={(e) => setEditedMessage(e.target.value)} className="edit-input" />
+                    <input 
+                        type="text" 
+                        value={editedMessage} 
+                        onChange={(e) => setEditedMessage(e.target.value)}
+                        onKeyUp={(event) => {
+                            if (event.key === "Enter") {
+                              handleSave();
+                            }
+                        }} 
+                        className="edit-input" />
                     <div className="button-container">
                         <button onClick={handleSave} className="save-button">Save</button>
                         <button onClick={handleCancel} className="cancel-button">Cancel</button>
