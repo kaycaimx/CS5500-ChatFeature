@@ -202,11 +202,7 @@ function ChatComponent() {
     const onEmojiClick = (emojiData: EmojiClickData, event: MouseEvent) => {
         setMessage(prevInput => prevInput + emojiData.emoji);
     };
-
-    useEffect(() => {
-        localStorage.setItem('chatMessages', JSON.stringify(messages));
-    }, [messages]);
-
+    
     useEffect(() => {
         const handleStorageChange = (event: StorageEvent) => {
             if (event.key === 'chatMessages' && event.newValue) {
