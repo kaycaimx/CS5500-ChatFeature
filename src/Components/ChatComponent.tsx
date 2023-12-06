@@ -17,11 +17,22 @@ function ChatComponent() {
     const [displayCount, setDisplayCount] = useState(20); // number of messages to display at beginning
     const [isSendingMessage, setIsSendingMessage] = useState(false);
     const [formattedMessages, setFormattedMessages] = useState<JSX.Element[]>([]); // reload the messages when the display count changes
-
+    const [forceUpdateKey, setForceUpdateKey] = useState(0);
     
     let localUser = user;
     let localMessage = message;
 
+    useEffect(() => {
+        console.log("useEffect is running"); // 添加这行
+        const unsubscribe = chatClient.subscribeToUpdates((updatedMessages) => {
+            console.log("Updating messages in component", updatedMessages);
+            setMessages(updatedMessages);
+        });
+    
+        return () => {
+            unsubscribe();
+        };
+    }, [forceUpdateKey]);
     
 
     const updateDisplay = useCallback(() => {
@@ -109,6 +120,10 @@ function ChatComponent() {
         }
     }
     
+    function forceUpdate() {
+        setForceUpdateKey((prevKey) => prevKey + 1);
+    }
+
     const handleEdit = async (messageId: number, newMessage: string) => {
         await chatClient.editMessage(messageId, newMessage);
         setMessages((prevMessages) =>
@@ -116,6 +131,7 @@ function ChatComponent() {
                 message.id === messageId ? { ...message, message: newMessage } : message
             )
         );
+        forceUpdate();
     };
 
     const handleDelete = async (messageId: number) => {
@@ -123,6 +139,7 @@ function ChatComponent() {
         setMessages((prevMessages) =>
             prevMessages.filter((message) => message.id !== messageId)
         );
+        forceUpdate();
     };    
 
     return (
@@ -181,4 +198,3 @@ function ChatComponent() {
 }
 
 export default ChatComponent;
-

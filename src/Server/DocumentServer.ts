@@ -72,9 +72,11 @@ wss.on('connection', function connection(ws) {
             case 'edit_message':
                 console.log("Switch edit log", data.content)
                 editMessage(data.content.messageId, data.content.newMessage);
+                broadcast({ type: 'message_edited', messageId: data.content.messageId, messages: messages });
                 break;
             case 'delete_message':
                 deleteMessageById(data.content.messageId);
+                broadcast({ type: 'message_deleted', messageId: data.content.messageId, messages: messages });
                 break;
         }
     });
@@ -85,7 +87,7 @@ wss.on('connection', function connection(ws) {
 });
 
 // 广播函数
-function broadcast(data: { type: string; messageId: any; messages: any; }) {
+function broadcast(data: { type: string; messageId: number; messages: MessageContainer[]; }) {
     wss.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(data));
@@ -95,13 +97,12 @@ function broadcast(data: { type: string; messageId: any; messages: any; }) {
 
 // 编辑消息
 async function editMessage(messageId: number, newMessageText: string) {
-    let messageFound = false;
-    console.log("DocumentServer Message edited:", messageId, newMessageText);
     try {
         const success = await database.editMessage(messageId, newMessageText);
 
         if (success) {
-            broadcast({ type: 'message_edited', messageId, messages });
+            const messagesContainer = await database.getAllMessages();
+            broadcast({ type: 'message_edited', messageId, messages: messagesContainer.messages });
         } else {
             console.log("Message not found for editing:", messageId);
         }
@@ -111,17 +112,18 @@ async function editMessage(messageId: number, newMessageText: string) {
 }
 
 // 删除消息
-function deleteMessageById(messageId: number) {
-    const messageIndex = messages.findIndex(message => message.id === messageId);
-    if (messageIndex !== -1) {
-        messages.splice(messageIndex, 1);
-        console.log("Message deleted:", messageId);
-        const success = database.deleteMessageById(messageId); 
+async function deleteMessageById(messageId: number) {
+    try {
+        const success = await database.deleteMessageById(messageId);
+
         if (success) {
-            broadcast({ type: 'message_deleted', messageId, messages });
+            const messagesContainer = await database.getAllMessages();
+            broadcast({ type: 'message_deleted', messageId, messages: messagesContainer.messages });
+        } else {
+            console.log("Message not found for deletion:", messageId);
         }
-    } else {
-        console.log("Message not found for deletion:", messageId);
+    } catch (error) {
+        console.error("Error deleting message:", error);
     }
 }
 

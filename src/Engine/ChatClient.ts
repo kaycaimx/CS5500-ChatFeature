@@ -21,6 +21,8 @@ class ChatClient {
     previousMessagesFetched: boolean = false;
     messages: MessageContainer[] = [];
     updateDisplay: () => void = () => { };
+    // 添加一个用来保存回调函数的属性
+    private onMessageUpdate: ((messages: MessageContainer[]) => void) | null = null;
 
     /**
      * Creates an instance of ChatClient.
@@ -40,16 +42,48 @@ class ChatClient {
         this.initWebSocket();
     }
 
+    // 添加一个方法来设置回调
+    public subscribeToUpdates(callback: (messages: MessageContainer[]) => void): () => void {
+        console.log("subscribeToUpdates()");
+        this.onMessageUpdate = callback;
+        return () => {
+            this.onMessageUpdate = null;
+        };
+    }
+
+    // 确保在消息更新时调用回调
+    private notifyUpdate() {
+        if (this.onMessageUpdate) {
+          this.onMessageUpdate([...this.messages]);
+        }
+    }
+
     initWebSocket() {
         console.log("initWebSocket()");
-        this.socket = new WebSocket('ws://localhost:3005');
+        // 检查 localStorage 中是否已有 WebSocket 连接信息
+        const savedWsUrl = localStorage.getItem('websocketUrl');
+        const wsUrl = savedWsUrl || 'ws://localhost:3005';
+
+        this.socket = new WebSocket(wsUrl);
 
         this.socket.onopen = () => {
             console.log("initWebSocket WebSocket connection established");
+            if (!savedWsUrl) {
+              localStorage.setItem('websocketUrl', wsUrl);
+            }
         };
 
         this.socket.onmessage = (event) => {
-            console.log("initWebSocket Message from server:", event.data);
+            console.log("WebSocket message received:", event);
+            const data = JSON.parse(event.data);
+            if (data.type === 'messageUpdated') {
+                this.localEditMessage(data.messageId, data.newMessage);
+                localStorage.setItem('messages', JSON.stringify(this.messages));
+            } else if (data.type === 'messageDeleted') {
+                this.localDeleteMessage(data.messageId);
+                localStorage.setItem('messages', JSON.stringify(this.messages));
+            }
+            console.log("WebSocket message data:", data);
         };
 
         this.socket.onclose = () => {
@@ -129,6 +163,7 @@ class ChatClient {
         } else {
             console.log("ChatClient Message not found for editing:", messageId);
         }
+        this.notifyUpdate();
     }
 
     localDeleteMessage(messageId: number) {
@@ -140,6 +175,7 @@ class ChatClient {
         } else {
             console.log("Message not found for deletion:", messageId);
         }
+        this.notifyUpdate();
     }
 
     /** 
